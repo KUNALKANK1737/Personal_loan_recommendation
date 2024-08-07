@@ -9,6 +9,7 @@
  <div class="login">
     <h1>Loan Eligibility Check</h1>
     <form action="{{ url_for('predict') }}" method="post">
+        <input type="email" name="email" placeholder="Email" required />
         <input type="text" name="loan_id" placeholder="Loan ID" required />
         <input type="number" name="no_of_dependents" placeholder="Number of Dependents" required />
         <input type="text" name="education" placeholder="Education" required />

@@ -6,4 +6,6 @@ scikit-learn
 flask
 pickle4
 scikit-learn
+Flask-Mail
+python-dotenv
 -e .

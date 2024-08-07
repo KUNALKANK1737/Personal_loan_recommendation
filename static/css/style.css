@@ -1,69 +1,71 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans');
-
 body {
-    width: 100%;
-    height: 100%;
-    font-family: 'Open Sans', sans-serif;
-    background: #000;
+    background: linear-gradient(to right, #00c6ff, #0072ff);
+    font-family: 'Roboto', sans-serif;
     color: #fff;
-    font-size: 20px;
-    text-align: center;
-    letter-spacing: 1.6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
 }
 
 .login {
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    height: auto;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 8px;
-}
-
-.login h1 {
-    color: #fff;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    letter-spacing: 1px;
-    margin-bottom: 20px;
-}
-
-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
     width: 100%;
-    margin-bottom: 10px;
-    border: none;
-    outline: none;
-    padding: 10px;
-    font-size: 16px;
-    color: #fff;
-    background: #333;
-    border-radius: 4px;
-    box-shadow: inset 0 -5px 45px rgba(100, 100, 100, 0.2), 0 1px 1px rgba(255, 255, 255, 0.2);
-    transition: box-shadow .5s ease;
+    text-align: center;
 }
 
-input:focus {
-    box-shadow: inset 0 -5px 45px rgba(100, 100, 100, 0.4), 0 1px 1px rgba(255, 255, 255, 0.2);
+h1 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="submit"] {
+    margin: 10px 0;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-size: 1rem;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus {
+    background-color: rgba(255, 255, 255, 0.5);
+    outline: none;
 }
 
 .btn {
-    display: inline-block;
-    padding: 10px 20px;
-    margin-bottom: 0;
-    font-size: 15px;
+    background-color: #0072ff;
     color: #fff;
-    text-align: center;
-    background-color: #4a77d4;
-    border: 1px solid #3762bc;
-    border-radius: 4px;
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.5);
+    font-size: 1.1rem;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
-.btn-primary:hover {
-    background-color: #6eb6de;
+.btn:hover {
+    background-color: #005bb5;
+}
+
+.result {
+    margin-top: 20px;
+    font-size: 1.1rem;
+    color: #ffeced;
 }
