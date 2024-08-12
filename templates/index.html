@@ -1,32 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Loan Eligibility Check</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Loan Eligibility</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
-<body style="background: #000;">
- <div class="login">
-    <h1>Loan Eligibility Check</h1>
-    <form action="{{ url_for('predict') }}" method="post">
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="text" name="loan_id" placeholder="Loan ID" required />
-        <input type="number" name="no_of_dependents" placeholder="Number of Dependents" required />
-        <input type="text" name="education" placeholder="Education" required />
-        <input type="text" name="self_employed" placeholder="Self Employed" required />
-        <input type="number" step="0.01" name="Income" placeholder="Annual Income" required />
-        <input type="number" step="0.01" name="loan_amount" placeholder="Loan Amount" required />
-        <input type="number" step="0.01" name="loan_term" placeholder="Loan Term" required />
-        <input type="number" step="0.01" name="cibil_score" placeholder="CIBIL Score" required />
-        <input type="number" step="0.01" name="residential_assets_value" placeholder="Residential Assets Value" required />
-        <input type="number" step="0.01" name="commercial_assets_value" placeholder="Commercial Assets Value" required />
-        <input type="number" step="0.01" name="luxury_assets_value" placeholder="Luxury Assets Value" required />
-        <input type="number" step="0.01" name="bank_asset_value" placeholder="Bank Asset Value" required />
-        <button type="submit" class="btn btn-primary btn-block btn-large">Predict Eligibility</button>
-    </form>
-    <br>
-    <br>
-    {{ prediction_text }}
- </div>
+<body>
+    <div class="container">
+        <h1>Home Loan Eligibility Prediction</h1>
+        <form action="/predict" method="post">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="self_employed">Self Employed (0: No, 1: Yes):</label>
+            <input type="number" id="self_employed" name="self_employed">
+
+            <label for="income_annum">Annual Income:</label>
+            <input type="number" id="income_annum" name="income_annum" step="0.01">
+
+            <label for="loan_amount">Loan Amount:</label>
+            <input type="number" id="loan_amount" name="loan_amount" step="0.01">
+
+            <label for="loan_term">Loan Term (in years):</label>
+            <input type="number" id="loan_term" name="loan_term" step="0.01">
+
+            <label for="cibil_score">CIBIL Score:</label>
+            <input type="number" id="cibil_score" name="cibil_score">
+
+            <label for="bank_asset_value">Bank Asset Value:</label>
+            <input type="number" id="bank_asset_value" name="bank_asset_value" step="0.01">
+
+
+            <button type="submit">Predict</button>
+        </form>
+        {% if error_message %}
+        <p class="error">{{ error_message }}</p>
+        {% endif %}
+    </div>
 </body>
 </html>

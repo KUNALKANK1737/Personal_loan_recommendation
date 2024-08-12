@@ -4,39 +4,79 @@ import pickle
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import os
 from dotenv import load_dotenv
-
-app = Flask(__name__)
-
+import os
+import pandas as pd
 
 load_dotenv()
 
-try:
-    with open('model.pkl', 'rb') as file:
-        model = pickle.load(file)
-    print("Model loaded successfully.")
-except FileNotFoundError:
-    print("Error: The file 'model.pkl' was not found.")
-except Exception as e:
-    print(f"Error loading the model: {e}")
+app = Flask(__name__)
 
+eligibility_model = None
+
+def load_model():
+    global eligibility_model
+    try:
+        with open('model.pkl', 'rb') as file:
+            eligibility_model = pickle.load(file)
+            print(f"Model loaded successfully: {type(eligibility_model)}")
+    except FileNotFoundError:
+        print("Error: The file 'model.pkl' was not found.")
+    except Exception as e:
+        print(f"Error loading the model: {e}")
+load_model()
+
+loan_schemes = None
+
+try:
+    loan_schemes = pd.read_csv('loan_schemes (2).csv')
+    print("Loaded loan schemes data successfully.")
+
+
+except FileNotFoundError:
+    print("Error: The file 'loan_schemes.csv' was not found.")
+except Exception as e:
+    print(f"Error loading the loan schemes data: {e}")
+
+def recommend_loans(user_profile,Age):
+    if loan_schemes is None:
+        print("Loan schemes data is not loaded.")
+        return []
+    loan_schemes['Min_Income'] = pd.to_numeric(loan_schemes['Min_Income'], errors='coerce')
+    loan_schemes['Max_Income'] = pd.to_numeric(loan_schemes['Max_Income'], errors='coerce')
+    loan_schemes['Min_CIBIL'] = pd.to_numeric(loan_schemes['Min_CIBIL'], errors='coerce')
+    loan_schemes['Max_CIBIL'] = pd.to_numeric(loan_schemes['Max_CIBIL'], errors='coerce')
+    loan_schemes['Min_Loan_Amount'] = pd.to_numeric(loan_schemes['Min_Loan_Amount'], errors='coerce')
+    loan_schemes['Max_Loan_Amount'] = pd.to_numeric(loan_schemes['Max_Loan_Amount'], errors='coerce')
+
+    eligible_schemes = loan_schemes[
+        (loan_schemes['Min_Income'] <= user_profile['income_annum']) &
+        (loan_schemes['Max_Income'] >= user_profile['income_annum']) &
+        (loan_schemes['Min_CIBIL'] <= user_profile['cibil_score']) &
+        (loan_schemes['Max_CIBIL'] >= user_profile['cibil_score']) &
+        (loan_schemes['Min_Loan_Amount'] <= user_profile['loan_amount']) &
+        (loan_schemes['Max_Loan_Amount'] >= user_profile['loan_amount'])&
+        (user_profile['Age']==loan_schemes['Age'])
+    ]
+    print("Eligible Schemes After Filtering:", eligible_schemes)
+    if eligible_schemes.empty:
+        return []
+    eligible_schemes['Loan_Amount_Difference'] = eligible_schemes.apply(
+        lambda row: min(abs(user_profile['loan_amount'] - row['Min_Loan_Amount']),
+                        abs(user_profile['loan_amount'] - row['Max_Loan_Amount'])),
+        axis=1
+    )
+    eligible_schemes = eligible_schemes.sort_values(by=['Loan_Amount_Difference', 'Interest_Rate'])
+    print("Sorted Eligible Schemes:", eligible_schemes)
+    return eligible_schemes.head(3).to_dict('records')
 
 def send_email(email, subject, body):
-    """
-    Send an email notification.
-
-    :param email: Recipient email address
-    :param subject: Email subject
-    :param body: Email body
-    """
-    load_dotenv()  
-
     sender_email = os.getenv('EMAIL_ADDRESS')
     sender_password = os.getenv('EMAIL_PASSWORD')
 
     if not sender_email or not sender_password:
-        raise ValueError("Email address and password must be set in environment variables.")
+        print("Email address and password must be set in environment variables.")
+        return
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -45,7 +85,6 @@ def send_email(email, subject, body):
     msg.attach(MIMEText(body, 'plain'))
 
     try:
-      
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login(sender_email, sender_password)
@@ -65,48 +104,71 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    if eligibility_model is None:
+        error_message = "The model is not loaded. Please check the logs for more details."
+        print(error_message)
+        return render_template('result.html', error_message=error_message)
+
     try:
-      
         email = request.form.get('email', '')
-        int_features = [
-            float(request.form.get('loan_id', 0)),
-            float(request.form.get('no_of_dependents', 0)),
-            float(request.form.get('education', 0)),
-            float(request.form.get('self_employed', 0)),
-            float(request.form.get('Income', 0.0)),
-            float(request.form.get('loan_amount', 0.0)),
-            float(request.form.get('loan_term', 0.0)),
-            float(request.form.get('cibil_score', 0.0)),
-            float(request.form.get('residential_assets_value', 0.0)),
-            float(request.form.get('commercial_assets_value', 0.0)),
-            float(request.form.get('luxury_assets_value', 0.0)),
-            float(request.form.get('bank_asset_value', 0.0))
+        job_cat=request.form.get('Job Category','')
+        Age=request.form.get('Age','')
+        user_profile = {
+            'self_employed': int(request.form.get('self_employed', 0)),
+            'income_annum': float(request.form.get('income_annum', 0.0)),
+            'loan_amount': float(request.form.get('loan_amount', 0.0)),
+            'loan_term': float(request.form.get('loan_term', 0.0)),
+            'cibil_score': float(request.form.get('cibil_score', 0.0)),
+            'assets': float(request.form.get('assets', 0.0))
+        }
+
+        print("User Profile:", user_profile)
+
+        features = [
+            user_profile['self_employed'],
+            user_profile['income_annum'],
+            user_profile['loan_amount'],
+            user_profile['loan_term'],
+            user_profile['cibil_score'],
+            user_profile['assets']
         ]
 
-        print("Features for prediction:", int_features)
-
-       
-        final_features = [np.array(int_features)]
-
-        
-        prediction = model.predict(final_features)
+        final_features = [np.array(features)]
+        prediction = eligibility_model.predict(final_features)
         output = prediction[0]
 
-       
+        print("Model Prediction:", output)
+
         if output == 1:
             result_text = "Congratulations! You are eligible for the loan."
             subject = "Loan Approval"
-            body = (
-                "Dear Customer,\n\n"
-                "We are pleased to inform you that your loan application has been approved.\n"
-                "You are eligible for our exclusive home loan products.\n\n"
-                "Here are some of our recommended home loan options:\n"
-                "- **Home Loan A**: 5% interest rate\n"
-                "- **Home Loan B**: 4.5% interest rate\n"
-                "- **Home Loan C**: 4.7% interest rate\n\n"
-                "Thank you for choosing our services.\n\n"
-                "Best regards,\nLoan Department"
-            )
+
+            recommended_schemes = recommend_loans(user_profile)
+
+            if recommended_schemes:
+                schemes_list = "\n".join([
+                    f"{row['Scheme_Name']} from {row['Bank_Name']}: {row['Interest_Rate']}% interest rate for {row['Loan_Term_Years']} years."
+                    for row in recommended_schemes
+                ])
+
+                body = (
+                    "Dear Customer,\n\n"
+                    "We are pleased to inform you that your loan application has been approved.\n"
+                    "Based on your profile, we recommend the following home loan schemes:\n\n"
+                    f"{schemes_list}\n\n"
+                    "Thank you for choosing our services.\n\n"
+                    "Best regards,\nLoan Department"
+                )
+            else:
+                result_text = "Congratulations! You are eligible for the loan, but we could not find suitable schemes based on your profile."
+                body = (
+                    "Dear Customer,\n\n"
+                    "We are pleased to inform you that your loan application has been approved.\n"
+                    "However, we could not find any suitable loan schemes based on your profile.\n"
+                    "Thank you for choosing our services.\n\n"
+                    "Best regards,\nLoan Department"
+                )
+
         else:
             result_text = "Sorry, you are not eligible for the loan."
             subject = "Loan Rejection"
@@ -119,17 +181,28 @@ def predict():
                 "Best regards,\nLoan Department"
             )
 
-        
         send_email(email, subject, body)
 
-        
-        return render_template(
-            'index.html',
-            prediction_text=result_text
-        )
+        new_data = {
+            'self_employed': [user_profile['self_employed']],
+            'income_annum': [user_profile['income_annum']],
+            'loan_amount': [user_profile['loan_amount']],
+            'loan_term': [user_profile['loan_term']],
+            'cibil_score': [user_profile['cibil_score']],
+            'assets': [user_profile['assets']],
+            'loan_status': [output]
+        }
+        new_df = pd.DataFrame(new_data)
+        new_df.to_csv('customer_data.csv', mode='a', header=False, index=False)
 
+        return render_template('result.html', result_text=result_text,schemes_list=schemes_list)
+
+    except ValueError as e:
+        error_message = f"Input error: {e}. Please ensure all inputs are valid numbers."
+        print(error_message)
+        return render_template('result.html', error_message=error_message)
     except Exception as e:
-        return render_template('index.html', prediction_text=f'Error during prediction: {e}')
-
+        print(f"An error occurred: {e}")
+        return render_template('result.html', error_message="An error occurred. Please try again.")
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080, debug=True)
