@@ -10,7 +10,7 @@ import pandas as pd
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(_name_)
 
 eligibility_model = None
 
@@ -24,6 +24,7 @@ def load_model():
         print("Error: The file 'model.pkl' was not found.")
     except Exception as e:
         print(f"Error loading the model: {e}")
+
 load_model()
 
 loan_schemes = None
@@ -31,44 +32,147 @@ loan_schemes = None
 try:
     loan_schemes = pd.read_csv('loan_schemes (2).csv')
     print("Loaded loan schemes data successfully.")
-
-
 except FileNotFoundError:
     print("Error: The file 'loan_schemes.csv' was not found.")
 except Exception as e:
     print(f"Error loading the loan schemes data: {e}")
 
-def recommend_loans(user_profile,Age):
-    if loan_schemes is None:
-        print("Loan schemes data is not loaded.")
-        return []
-    loan_schemes['Min_Income'] = pd.to_numeric(loan_schemes['Min_Income'], errors='coerce')
-    loan_schemes['Max_Income'] = pd.to_numeric(loan_schemes['Max_Income'], errors='coerce')
-    loan_schemes['Min_CIBIL'] = pd.to_numeric(loan_schemes['Min_CIBIL'], errors='coerce')
-    loan_schemes['Max_CIBIL'] = pd.to_numeric(loan_schemes['Max_CIBIL'], errors='coerce')
-    loan_schemes['Min_Loan_Amount'] = pd.to_numeric(loan_schemes['Min_Loan_Amount'], errors='coerce')
-    loan_schemes['Max_Loan_Amount'] = pd.to_numeric(loan_schemes['Max_Loan_Amount'], errors='coerce')
+loan_products = [
+    {
+        "Product_Name": "SBI Premium Home Loan",
+        "Min_Income": 500000,
+        "Max_Income": 2000000,
+        "Min_CIBIL": 800,
+        "Max_CIBIL": 900,
+        "Min_Loan_Amount": 5000000,
+        "Max_Loan_Amount": 50000000,
+        "Interest_Rate": 7.5,
+        "Loan_Term_Years": 30
+    },
+    {
+        "Product_Name": "SBI Flexipay Home Loan",
+        "Min_Income": 300000,
+        "Max_Income": 1500000,
+        "Min_CIBIL": 750,
+        "Max_CIBIL": 850,
+        "Min_Loan_Amount": 2000000,
+        "Max_Loan_Amount": 20000000,
+        "Interest_Rate": 8.0,
+        "Loan_Term_Years": 20
+    },
+    {
+        "Product_Name": "SBI Regular Home Loan",
+        "Min_Income": 400000,
+        "Max_Income": 1800000,
+        "Min_CIBIL": 700,
+        "Max_CIBIL": 850,
+        "Min_Loan_Amount": 1000000,
+        "Max_Loan_Amount": 10000000,
+        "Interest_Rate": 7.8,
+        "Loan_Term_Years": 25
+    },
+    {
+        "Product_Name": "SBI Realty Home Loan",
+        "Min_Income": 600000,
+        "Max_Income": 2500000,
+        "Min_CIBIL": 780,
+        "Max_CIBIL": 900,
+        "Min_Loan_Amount": 3000000,
+        "Max_Loan_Amount": 30000000,
+        "Interest_Rate": 7.2,
+        "Loan_Term_Years": 35
+    },
+    {
+        "Product_Name": "SBI Tribal Plus Home Loan",
+        "Min_Income": 200000,
+        "Max_Income": 1200000,
+        "Min_CIBIL": 650,
+        "Max_CIBIL": 800,
+        "Min_Loan_Amount": 1000000,
+        "Max_Loan_Amount": 5000000,
+        "Interest_Rate": 8.5,
+        "Loan_Term_Years": 15
+    },
+    {
+        "Product_Name": "SBI Top-up Home Loan",
+        "Min_Income": 400000,
+        "Max_Income": 2000000,
+        "Min_CIBIL": 700,
+        "Max_CIBIL": 850,
+        "Min_Loan_Amount": 500000,
+        "Max_Loan_Amount": 5000000,
+        "Interest_Rate": 8.2,
+        "Loan_Term_Years": 10
+    },
+    {
+        "Product_Name": "SBI Earnest Money Deposit Home Loan",
+        "Min_Income": 300000,
+        "Max_Income": 1000000,
+        "Min_CIBIL": 700,
+        "Max_CIBIL": 850,
+        "Min_Loan_Amount": 500000,
+        "Max_Loan_Amount": 3000000,
+        "Interest_Rate": 8.5,
+        "Loan_Term_Years": 5
+    },
+    {
+        "Product_Name": "SBI CRE Home Loan",
+        "Min_Income": 800000,
+        "Max_Income": 5000000,
+        "Min_CIBIL": 750,
+        "Max_CIBIL": 900,
+        "Min_Loan_Amount": 10000000,
+        "Max_Loan_Amount": 100000000,
+        "Interest_Rate": 7.0,
+        "Loan_Term_Years": 15
+    },
+    {
+        "Product_Name": "SBI Loan Against Property",
+        "Min_Income": 500000,
+        "Max_Income": 2500000,
+        "Min_CIBIL": 700,
+        "Max_CIBIL": 850,
+        "Min_Loan_Amount": 2000000,
+        "Max_Loan_Amount": 20000000,
+        "Interest_Rate": 8.0,
+        "Loan_Term_Years": 20
+    },
+    {
+        "Product_Name": "SBI Low Income Home Loan",
+        "Min_Income": 150000,
+        "Max_Income": 800000,
+        "Min_CIBIL": 650,
+        "Max_CIBIL": 800,
+        "Min_Loan_Amount": 500000,
+        "Max_Loan_Amount": 2000000,
+        "Interest_Rate": 8.7,
+        "Loan_Term_Years": 10
+    }
+]
 
-    eligible_schemes = loan_schemes[
-        (loan_schemes['Min_Income'] <= user_profile['income_annum']) &
-        (loan_schemes['Max_Income'] >= user_profile['income_annum']) &
-        (loan_schemes['Min_CIBIL'] <= user_profile['cibil_score']) &
-        (loan_schemes['Max_CIBIL'] >= user_profile['cibil_score']) &
-        (loan_schemes['Min_Loan_Amount'] <= user_profile['loan_amount']) &
-        (loan_schemes['Max_Loan_Amount'] >= user_profile['loan_amount'])&
-        (user_profile['Age']==loan_schemes['Age'])
-    ]
-    print("Eligible Schemes After Filtering:", eligible_schemes)
-    if eligible_schemes.empty:
+
+
+
+def recommend_loans(user_profile):
+    eligible_schemes = []
+    for product in loan_products:
+        if (product['Min_Income'] <= user_profile['income_annum'] <= product['Max_Income'] and
+            product['Min_CIBIL'] <= user_profile['cibil_score'] <= product['Max_CIBIL'] and
+            product['Min_Loan_Amount'] <= user_profile['loan_amount'] <= product['Max_Loan_Amount']):
+            eligible_schemes.append(product)
+
+    if not eligible_schemes:
         return []
-    eligible_schemes['Loan_Amount_Difference'] = eligible_schemes.apply(
+
+    eligible_schemes_df = pd.DataFrame(eligible_schemes)
+    eligible_schemes_df['Loan_Amount_Difference'] = eligible_schemes_df.apply(
         lambda row: min(abs(user_profile['loan_amount'] - row['Min_Loan_Amount']),
                         abs(user_profile['loan_amount'] - row['Max_Loan_Amount'])),
         axis=1
     )
-    eligible_schemes = eligible_schemes.sort_values(by=['Loan_Amount_Difference', 'Interest_Rate'])
-    print("Sorted Eligible Schemes:", eligible_schemes)
-    return eligible_schemes.head(3).to_dict('records')
+    eligible_schemes_df = eligible_schemes_df.sort_values(by=['Loan_Amount_Difference', 'Interest_Rate'])
+    return eligible_schemes_df.head(3).to_dict('records')
+
 
 def send_email(email, subject, body):
     sender_email = os.getenv('EMAIL_ADDRESS')
@@ -111,8 +215,6 @@ def predict():
 
     try:
         email = request.form.get('email', '')
-        job_cat=request.form.get('Job Category','')
-        Age=request.form.get('Age','')
         user_profile = {
             'self_employed': int(request.form.get('self_employed', 0)),
             'income_annum': float(request.form.get('income_annum', 0.0)),
@@ -138,15 +240,18 @@ def predict():
 
         print("Model Prediction:", output)
 
+        schemes_list = ""  # Initialize to an empty string by default
+
         if output == 1:
             result_text = "Congratulations! You are eligible for the loan."
             subject = "Loan Approval"
 
             recommended_schemes = recommend_loans(user_profile)
+            print(recommended_schemes)
 
             if recommended_schemes:
                 schemes_list = "\n".join([
-                    f"{row['Scheme_Name']} from {row['Bank_Name']}: {row['Interest_Rate']}% interest rate for {row['Loan_Term_Years']} years."
+                    f"{row['Product_Name']}: {row['Interest_Rate']}% interest rate for {row['Loan_Term_Years']} years."
                     for row in recommended_schemes
                 ])
 
@@ -194,7 +299,7 @@ def predict():
         new_df = pd.DataFrame(new_data)
         new_df.to_csv('customer_data.csv', mode='a', header=False, index=False)
 
-        return render_template('result.html', result_text=result_text,schemes_list=schemes_list)
+        return render_template('result.html', result_text=result_text, schemes_list=schemes_list)
 
     except ValueError as e:
         error_message = f"Input error: {e}. Please ensure all inputs are valid numbers."
@@ -203,6 +308,6 @@ def predict():
     except Exception as e:
         print(f"An error occurred: {e}")
         return render_template('result.html', error_message="An error occurred. Please try again.")
-if __name__ == "__main__":
+
+if __name__ == "_main_":
     app.run(host='0.0.0.0', port=8080, debug=True)
-# url for ecr =  471112687418.dkr.ecr.us-east-1.amazonaws.com/loan

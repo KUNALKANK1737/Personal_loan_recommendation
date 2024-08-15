@@ -3,22 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan Prediction Result</title>
+    <title>Loan Eligibility Result</title>
+    <link rel="stylesheet" href="static\css\styles.css">
 </head>
 <body>
-    <h1>Loan Prediction Result</h1>
-
-    {% if result_text %}
-        <p>{{ result_text }}</p>
-    {% endif %}
-    {% if schemes_list %}
-        <p>{{ schemes_list }}</p>
-    {% endif %}
-
-    {% if error_message %}
-        <p style="color: red;">{{ error_message }}</p>
-    {% endif %}
-
-    <a href="/">Go Back</a>
+    <div class="container">
+        <h2>Loan Eligibility Result</h2>
+        {% if result_text %}
+            <p>{{ result_text }}</p>
+        {% endif %}
+        {% if schemes_list %}
+            <h3>Recommended Loan Schemes:</h3>
+            <ul>
+                {% for scheme in schemes_list %}
+                    <li>{{ scheme }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if error_message %}
+            <p class="error">{{ error_message }}</p>
+        {% endif %}
+    </div>
 </body>
 </html>
