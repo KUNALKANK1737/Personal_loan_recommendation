@@ -10,7 +10,7 @@ import pandas as pd
 
 load_dotenv()
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 eligibility_model = None
 
@@ -29,13 +29,6 @@ load_model()
 
 loan_schemes = None
 
-try:
-    loan_schemes = pd.read_csv('loan_schemes (2).csv')
-    print("Loaded loan schemes data successfully.")
-except FileNotFoundError:
-    print("Error: The file 'loan_schemes.csv' was not found.")
-except Exception as e:
-    print(f"Error loading the loan schemes data: {e}")
 
 loan_products = [
     {
@@ -307,6 +300,6 @@ def predict():
         print(f"An error occurred: {e}")
         return render_template('result.html', error_message="An error occurred. Please try again.")
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     # app.run(host='0.0.0.0', port=8080, debug=True)
         app.run(host='0.0.0.0', port=8080)
