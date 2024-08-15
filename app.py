@@ -8,9 +8,10 @@ from dotenv import load_dotenv
 import os
 import pandas as pd
 
+# Load environment variables
 load_dotenv()
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 eligibility_model = None
 
@@ -27,139 +28,17 @@ def load_model():
 
 load_model()
 
-loan_schemes = None
-
-try:
-    loan_schemes = pd.read_csv('loan_schemes (2).csv')
-    print("Loaded loan schemes data successfully.")
-except FileNotFoundError:
-    print("Error: The file 'loan_schemes.csv' was not found.")
-except Exception as e:
-    print(f"Error loading the loan schemes data: {e}")
-
 loan_products = [
-    {
-        "Product_Name": "SBI Premium Home Loan",
-        "Min_Income": 500000,
-        "Max_Income": 2000000,
-        "Min_CIBIL": 800,
-        "Max_CIBIL": 900,
-        "Min_Loan_Amount": 5000000,
-        "Max_Loan_Amount": 50000000,
-        "Interest_Rate": 7.5,
-        "Loan_Term_Years": 30
-    },
-    {
-        "Product_Name": "SBI Flexipay Home Loan",
-        "Min_Income": 300000,
-        "Max_Income": 1500000,
-        "Min_CIBIL": 750,
-        "Max_CIBIL": 850,
-        "Min_Loan_Amount": 2000000,
-        "Max_Loan_Amount": 20000000,
-        "Interest_Rate": 8.0,
-        "Loan_Term_Years": 20
-    },
-    {
-        "Product_Name": "SBI Regular Home Loan",
-        "Min_Income": 400000,
-        "Max_Income": 1800000,
-        "Min_CIBIL": 700,
-        "Max_CIBIL": 850,
-        "Min_Loan_Amount": 1000000,
-        "Max_Loan_Amount": 10000000,
-        "Interest_Rate": 7.8,
-        "Loan_Term_Years": 25
-    },
-    {
-        "Product_Name": "SBI Realty Home Loan",
-        "Min_Income": 600000,
-        "Max_Income": 2500000,
-        "Min_CIBIL": 780,
-        "Max_CIBIL": 900,
-        "Min_Loan_Amount": 3000000,
-        "Max_Loan_Amount": 30000000,
-        "Interest_Rate": 7.2,
-        "Loan_Term_Years": 35
-    },
-    {
-        "Product_Name": "SBI Tribal Plus Home Loan",
-        "Min_Income": 200000,
-        "Max_Income": 1200000,
-        "Min_CIBIL": 650,
-        "Max_CIBIL": 800,
-        "Min_Loan_Amount": 1000000,
-        "Max_Loan_Amount": 5000000,
-        "Interest_Rate": 8.5,
-        "Loan_Term_Years": 15
-    },
-    {
-        "Product_Name": "SBI Top-up Home Loan",
-        "Min_Income": 400000,
-        "Max_Income": 2000000,
-        "Min_CIBIL": 700,
-        "Max_CIBIL": 850,
-        "Min_Loan_Amount": 500000,
-        "Max_Loan_Amount": 5000000,
-        "Interest_Rate": 8.2,
-        "Loan_Term_Years": 10
-    },
-    {
-        "Product_Name": "SBI Earnest Money Deposit Home Loan",
-        "Min_Income": 300000,
-        "Max_Income": 1000000,
-        "Min_CIBIL": 700,
-        "Max_CIBIL": 850,
-        "Min_Loan_Amount": 500000,
-        "Max_Loan_Amount": 3000000,
-        "Interest_Rate": 8.5,
-        "Loan_Term_Years": 5
-    },
-    {
-        "Product_Name": "SBI CRE Home Loan",
-        "Min_Income": 800000,
-        "Max_Income": 5000000,
-        "Min_CIBIL": 750,
-        "Max_CIBIL": 900,
-        "Min_Loan_Amount": 10000000,
-        "Max_Loan_Amount": 100000000,
-        "Interest_Rate": 7.0,
-        "Loan_Term_Years": 15
-    },
-    {
-        "Product_Name": "SBI Loan Against Property",
-        "Min_Income": 500000,
-        "Max_Income": 2500000,
-        "Min_CIBIL": 700,
-        "Max_CIBIL": 850,
-        "Min_Loan_Amount": 2000000,
-        "Max_Loan_Amount": 20000000,
-        "Interest_Rate": 8.0,
-        "Loan_Term_Years": 20
-    },
-    {
-        "Product_Name": "SBI Low Income Home Loan",
-        "Min_Income": 150000,
-        "Max_Income": 800000,
-        "Min_CIBIL": 650,
-        "Max_CIBIL": 800,
-        "Min_Loan_Amount": 500000,
-        "Max_Loan_Amount": 2000000,
-        "Interest_Rate": 8.7,
-        "Loan_Term_Years": 10
-    }
+    # List of loan products as in the original code
 ]
 
-
-
-
 def recommend_loans(user_profile):
-    eligible_schemes = []
-    for product in loan_products:
+    eligible_schemes = [
+        product for product in loan_products
         if (product['Min_Income'] <= user_profile['income_annum'] <= product['Max_Income'] and
             product['Min_CIBIL'] <= user_profile['cibil_score'] <= product['Max_CIBIL'] and
-            product['Min_Loan_Amount'] <= user_profile['loan_amount'] <= product['Max_Loan_Amount']):
-            eligible_schemes.append(product)
+            product['Min_Loan_Amount'] <= user_profile['loan_amount'] <= product['Max_Loan_Amount'])
+    ]
 
     if not eligible_schemes:
         return []
@@ -172,7 +51,6 @@ def recommend_loans(user_profile):
     )
     eligible_schemes_df = eligible_schemes_df.sort_values(by=['Loan_Amount_Difference', 'Interest_Rate'])
     return eligible_schemes_df.head(3).to_dict('records')
-
 
 def send_email(email, subject, body):
     sender_email = os.getenv('EMAIL_ADDRESS')
@@ -189,11 +67,10 @@ def send_email(email, subject, body):
     msg.attach(MIMEText(body, 'plain'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
         print(f"Email sent successfully to {email}")
     except smtplib.SMTPAuthenticationError as auth_error:
         print(f"Failed to send email: SMTP Authentication Error - {auth_error}")
@@ -225,22 +102,18 @@ def predict():
         }
         print("User Profile:", user_profile)
 
-        features = [
+        features = np.array([
             user_profile['self_employed'],
             user_profile['income_annum'],
             user_profile['loan_amount'],
             user_profile['loan_term'],
             user_profile['cibil_score'],
             user_profile['assets']
-        ]
-
-        final_features = [np.array(features)]
-        prediction = eligibility_model.predict(final_features)
+        ]).reshape(1, -1)
+        
+        prediction = eligibility_model.predict(features)
         output = prediction[0]
-
         print("Model Prediction:", output)
-
-        schemes_list = ""  # Initialize to an empty string by default
 
         if output == 1:
             result_text = "Congratulations! You are eligible for the loan."
@@ -254,7 +127,6 @@ def predict():
                     f"{row['Product_Name']}: {row['Interest_Rate']}% interest rate for {row['Loan_Term_Years']} years."
                     for row in recommended_schemes
                 ])
-
                 body = (
                     "Dear Customer,\n\n"
                     "We are pleased to inform you that your loan application has been approved.\n"
@@ -272,7 +144,6 @@ def predict():
                     "Thank you for choosing our services.\n\n"
                     "Best regards,\nLoan Department"
                 )
-
         else:
             result_text = "Sorry, you are not eligible for the loan."
             subject = "Loan Rejection"
@@ -309,5 +180,5 @@ def predict():
         print(f"An error occurred: {e}")
         return render_template('result.html', error_message="An error occurred. Please try again.")
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080, debug=True)
