@@ -121,7 +121,6 @@ def predict():
             'cibil_score': float(request.form.get('cibil_score', 0.0)),
             'assets': float(request.form.get('assets', 0.0))
         }
-
         print("User Profile:", user_profile)
 
         features = [
@@ -182,7 +181,7 @@ def predict():
             )
 
         send_email(email, subject, body)
-
+        
         new_data = {
             'self_employed': [user_profile['self_employed']],
             'income_annum': [user_profile['income_annum']],
@@ -206,3 +205,4 @@ def predict():
         return render_template('result.html', error_message="An error occurred. Please try again.")
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080, debug=True)
+# url for ecr =  471112687418.dkr.ecr.us-east-1.amazonaws.com/loan
