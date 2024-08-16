@@ -1,26 +1,39 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
-import joblib  
+import joblib
+import smtplib
+from email.mime.text import MIMEText
 from flask_mail import Mail, Message
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  
 
+# Database connection
 
-client = MongoClient('mongodb://localhost:27017')
-db = client['loan_recommendation']
+
+
+uri = "mongodb+srv://chaitanyakarale669:SUToDHl7b1cjg9ec@loanrecommendation.2kfd3.mongodb.net/?retryWrites=true&w=majority&appName=loanrecommendation"
+
+# Create a new client and connect to the server
+client = MongoClient(uri)
+
+# Send a ping to confirm a successful connection
+try:
+    client.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+except Exception as e:
+    print(e)
+
+db = client['loanrecommendation']
 users = db['users']
 
-
+# Load the ML model
 model = joblib.load('model.pkl')
-
-import smtplib
-from email.mime.text import MIMEText
 
 def send_email(to_email, subject, body):
     sender_email = "kankkunal3010@gmail.com"
-    app_password = "psqk sjnq vtgo zjgp" 
+    app_password = "psqk sjnq vtgo zjgp"  
 
     msg = MIMEText(body)
     msg['Subject'] = subject
@@ -160,11 +173,11 @@ def signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        email = request.form['email'] 
+        email = request.form['username']  # Get the email from the form
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
 
-      
-        users.insert_one({'username': username, 'password': hashed_password, 'email': email})
+     
+        users.insert_one({'username': username, 'password': hashed_password,'email':email})
         return redirect(url_for('login'))
     return render_template('signup.html')
 
@@ -201,13 +214,14 @@ def check_eligibility():
             'assets': float(request.form['assets'])
         }
 
-
+        # Prepare input data for model
         input_data = [[data['self_employed'], data['income_annum'], data['loan_amount'],
                        data['loan_term'], data['cibil_score'], data['assets']]]
 
+        # Make prediction
         prediction = model.predict(input_data)[0]
 
-      
+        # Determine eligibility and recommended products
         eligible = prediction == 1
         recommended_products = []
 
@@ -264,7 +278,7 @@ def check_eligibility():
 # Result Page
 @app.route('/result')
 def result():
-    pass 
+    pass  
 
 if __name__ == '__main__':
-    app.run(debug=True)
+   app.run(host="0.0.0.0", port = 8080)
