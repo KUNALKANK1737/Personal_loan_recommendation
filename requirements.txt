@@ -1,10 +1,10 @@
+Flask
+Flask-Mail
 pandas
 numpy
 seaborn
 matplotlib
 scikit-learn
-flask
-pickle4
-Flask-Mail
+pymongo
 python-dotenv
--e .
+joblib

@@ -3,25 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan Eligibility Result</title>
-    <link rel="stylesheet" href="static\css\styles.css">
+    <title>Loan Recommendation Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <div class="container">
-        <h2>Loan Eligibility Result</h2>
-        {% if result_text %}
-            <p>{{ result_text }}</p>
-        {% endif %}
-        {% if schemes_list %}
-            <h3>Recommended Loan Schemes:</h3>
+        <h1>Loan Recommendation Result</h1>
+        {% if eligible %}
+            <h2>You are eligible for the following loan products:</h2>
             <ul>
-                {% for scheme in schemes_list %}
-                    <li>{{ scheme }}</li>
+                {% for product in products %}
+                    <li>
+                        <strong>{{ product.Product_Name }}</strong><br>
+                        Interest Rate: {{ product.Interest_Rate }}%<br>
+                        Loan Term: {{ product.Loan_Term_Years }} years<br>
+                        Loan Amount Range: ₹{{ product.Min_Loan_Amount }} - ₹{{ product.Max_Loan_Amount }}<br>
+                        CIBIL Score Range: {{ product.Min_CIBIL }} - {{ product.Max_CIBIL }}<br>
+                        Annual Income Range: ₹{{ product.Min_Income }} - ₹{{ product.Max_Income }}
+                    </li>
                 {% endfor %}
             </ul>
-        {% endif %}
-        {% if error_message %}
-            <p class="error">{{ error_message }}</p>
+        {% else %}
+            <h2>Sorry, you are not eligible for any loan products at this time.</h2>
         {% endif %}
     </div>
 </body>
