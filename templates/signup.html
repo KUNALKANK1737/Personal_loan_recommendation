@@ -5,13 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+    </style>
+    <script>
+        function validateForm() {
+            let isValid = true;
+
+            // Clear previous error messages
+            const errorElements = document.querySelectorAll('.error');
+            errorElements.forEach(element => element.innerText = '');
+
+            const dob = new Date(document.forms["signupForm"]["dob"].value);
+            const mobile = document.forms["signupForm"]["mobile"].value;
+            const pan = document.forms["signupForm"]["pan"].value;
+            const aadhaar = document.forms["signupForm"]["aadhaar"].value;
+
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+
+            const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+            const mobileRegex = /^[0-9]{10}$/;
+            const aadhaarRegex = /^[0-9]{12}$/;
+
+            if (isNaN(dob.getTime())) {
+                document.getElementById('dobError').innerText = "Please enter a valid date of birth.";
+                isValid = false;
+            } else if (age < 18) {
+                document.getElementById('dobError').innerText = "You must be at least 18 years old.";
+                isValid = false;
+            }
+
+            if (!mobile.match(mobileRegex)) {
+                document.getElementById('mobileError').innerText = "Mobile number must be a 10-digit number.";
+                isValid = false;
+            }
+
+            if (!pan.match(panRegex)) {
+                document.getElementById('panError').innerText = "PAN number must be in the format ABCDE09812K.";
+                isValid = false;
+            }
+
+            if (!aadhaar.match(aadhaarRegex)) {
+                document.getElementById('aadhaarError').innerText = "Aadhaar number must be a 12-digit number.";
+                isValid = false;
+            }
+
+            return isValid;
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>Sign Up</h1>
-        <form method="POST">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
+        <form name="signupForm" method="POST" onsubmit="return validateForm()">
+            <div>
+                <input type="text" name="first_name" placeholder="First Name" required>
+                <div id="firstNameError" class="error"></div>
+            </div>
+            <div>
+                <input type="text" name="last_name" placeholder="Last Name" required>
+                <div id="lastNameError" class="error"></div>
+            </div>
+            <div>
+                <input type="date" name="dob" placeholder="Date of Birth" required>
+                <div id="dobError" class="error"></div>
+            </div>
+            <div>
+                <input type="text" name="city" placeholder="City" required>
+                <div id="cityError" class="error"></div>
+            </div>
+            <div>
+                <input type="text" name="mobile" placeholder="Mobile Number" required>
+                <div id="mobileError" class="error"></div>
+            </div>
+            <div>
+                <input type="text" name="pan" placeholder="PAN Number" required>
+                <div id="panError" class="error"></div>
+            </div>
+            <div>
+                <input type="text" name="aadhaar" placeholder="Aadhaar Number" required>
+                <div id="aadhaarError" class="error"></div>
+            </div>
+            <div>
+                <input type="text" name="username" placeholder="Username" required>
+                <div id="usernameError" class="error"></div>
+            </div>
+            <div>
+                <input type="password" name="password" placeholder="Password" required>
+                <div id="passwordError" class="error"></div>
+            </div>
             <button type="submit">Sign Up</button>
         </form>
     </div>

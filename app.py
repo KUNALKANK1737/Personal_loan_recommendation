@@ -11,14 +11,11 @@ app.secret_key = 'your_secret_key'
 
 # Database connection
 
-
-
 uri = "mongodb+srv://chaitanyakarale669:SUToDHl7b1cjg9ec@loanrecommendation.2kfd3.mongodb.net/?retryWrites=true&w=majority&appName=loanrecommendation"
 
-# Create a new client and connect to the server
 client = MongoClient(uri)
 
-# Send a ping to confirm a successful connection
+
 try:
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")
@@ -267,7 +264,7 @@ def check_eligibility():
             )
 
         user_email = session.get('username')
-        print(user_email," hello")
+        
         if user_email:
             send_email(user_email, subject, body)
         
