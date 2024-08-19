@@ -3,17 +3,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
 import joblib
 import smtplib
+import os
+from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from flask_mail import Mail, Message
-
+load_dotenv()
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  
+app.secret_key = os.getenv('SECRET_KEY') 
 
 # Database connection
 
-uri = "mongodb+srv://chaitanyakarale669:SUToDHl7b1cjg9ec@loanrecommendation.2kfd3.mongodb.net/?retryWrites=true&w=majority&appName=loanrecommendation"
-
-client = MongoClient(uri)
+client = MongoClient(os.getenv('MONGO_URI'))
 
 
 try:
@@ -29,8 +29,8 @@ users = db['users']
 model = joblib.load('model.pkl')
 
 def send_email(to_email, subject, body):
-    sender_email = "kankkunal3010@gmail.com"
-    app_password = "psqk sjnq vtgo zjgp"  
+    sender_email = os.getenv('EMAIL')
+    app_password = os.getenv('EMAIL_PASSWORD')  
 
     msg = MIMEText(body)
     msg['Subject'] = subject
@@ -95,7 +95,7 @@ loan_products = [
         "Product_Name": "SBI Tribal Plus Home Loan",
         "Min_Income": 200000,
         "Max_Income": 1200000,
-        "Min_CIBIL": 650,
+        "Min_CIBIL": 700,
         "Max_CIBIL": 800,
         "Min_Loan_Amount": 1000000,
         "Max_Loan_Amount": 5000000,
@@ -150,7 +150,7 @@ loan_products = [
         "Product_Name": "SBI Low Income Home Loan",
         "Min_Income": 150000,
         "Max_Income": 800000,
-        "Min_CIBIL": 650,
+        "Min_CIBIL": 700,
         "Max_CIBIL": 800,
         "Min_Loan_Amount": 500000,
         "Max_Loan_Amount": 2000000,
@@ -170,7 +170,7 @@ def signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        email = request.form['username']  # Get the email from the form
+        email = request.form['username'] 
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
 
      
@@ -188,7 +188,7 @@ def login():
 
         if user and check_password_hash(user['password'], password):
             session['username'] = username
-            session['email'] = user['username']  
+            session['email'] = user['username']
             return redirect(url_for('check_eligibility'))
         else:
             return 'Invalid credentials', 401
