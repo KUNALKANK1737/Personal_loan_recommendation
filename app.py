@@ -29,8 +29,8 @@ users = db['users']
 model = joblib.load('model.pkl')
 
 def send_email(to_email, subject, body):
-    sender_email = "kankkunal3010@gmail.com"
-    app_password = "psqk sjnq vtgo zjgp"  
+    sender_email = "Enter Mail"
+    app_password = "Enter Password"  
 
     msg = MIMEText(body)
     msg['Subject'] = subject
